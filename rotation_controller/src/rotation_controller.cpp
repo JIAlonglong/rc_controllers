@@ -4,31 +4,22 @@
 #include "rotation_controller/rotation_controller.h"
 
 namespace rotation_controller {
-    bool Controller::init(hardware_interface::EffortJointInterface *robot_hw, ros::NodeHandle &nh) {
-        std::string joint_name;
-        if (!nh.getParam("joint_name", joint_name)) {
-            ROS_ERROR("Failed to get joint name");
+    bool Controller::init(hardware_interface::RobotHW *robot_hw, ros::NodeHandle &nh) {
+        if (!joint_velocity_ctrl_.init(robot_hw->get<hardware_interface::VelocityJointInterface>(), nh)) {
+            ROS_WARN("joint_velocity_joint is failed");
             return false;
         }
-        joint_ = robot_hw->getHandle(joint_name);
         command_sub_ = nh.subscribe<std_msgs::Float64>("command", 1, &Controller::CommandCallback, this);
         return true;
     }
 
     void Controller::update(const ros::Time &time, const ros::Duration &period) {
-        joint_.setCommand(command_);
+       joint_velocity_ctrl_.update(time, period);
     }
-
-    void Controller::starting(const ros::Time &time) {
-        command_ = 0.0;
-    }
-
-    void Controller::stopping(const ros::Time &time) {
-        command_ = 0.0;
-    }
-
+    
     void Controller::CommandCallback(const std_msgs::Float64::ConstPtr &msg) {
         command_ = msg->data;
+        joint_velocity_ctrl_.command_buffer_.writeFromNonRT(command_);
     }
 
 }//namespace rotation_controller

@@ -1,0 +1,10 @@
+<library path="lib/librotation_controller">
+
+    <class name="rotation_controller/MimicJointController" type="rotation_controller::Controller"
+           base_class_type="controller_interface::ControllerBase">
+        <description>
+            This is a controller for the friction wheel, the friction strip, everything that needs to be moving all the
+            time
+        </description>
+    </class>
+</library>
